@@ -11,6 +11,7 @@ interface IProps {
 interface PerspectiveViewerElement extends HTMLElement {
   load: (table: Table) => void,
 }
+
 class Graph extends Component<IProps, {}> {
   table: Table | undefined;
 
@@ -23,10 +24,17 @@ class Graph extends Component<IProps, {}> {
     const elem = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
 
     const schema = {
-      stock: 'string',
-      top_ask_price: 'float',
-      top_bid_price: 'float',
-      timestamp: 'date',
+      // ... other fields ...
+      columns: [
+        // ... other columns ...
+        'ratio',
+        'upper_bound',
+        'lower_bound',
+        'trigger_alert',
+        'price_abc',
+        'price_def',
+      ],
+      // ... other schema properties ...
     };
 
     if (window.perspective && window.perspective.worker()) {
@@ -36,13 +44,17 @@ class Graph extends Component<IProps, {}> {
       // Load the `table` in the `<perspective-viewer>` DOM reference.
       elem.load(this.table);
       elem.setAttribute('view', 'y_line');
-      elem.setAttribute('column-pivots', '["stock"]');
+      // Comment out the following line or remove it
+      // elem.setAttribute('column-pivots', '["stock"]');
       elem.setAttribute('row-pivots', '["timestamp"]');
-      elem.setAttribute('columns', '["top_ask_price"]');
+      elem.setAttribute('columns', '["ratio", "upper_bound", "lower_bound", "trigger_alert", "price_abc", "price_def"]');
       elem.setAttribute('aggregates', JSON.stringify({
-        stock: 'distinctcount',
-        top_ask_price: 'avg',
-        top_bid_price: 'avg',
+        ratio: 'avg',
+        upper_bound: 'avg',
+        lower_bound: 'avg',
+        trigger_alert: 'avg',
+        price_abc: 'avg',
+        price_def: 'avg',
         timestamp: 'distinct count',
       }));
     }

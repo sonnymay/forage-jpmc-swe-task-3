@@ -143,7 +143,7 @@ def order_book(orders, book, stock_name):
 
 def generate_csv():
     """ Generate a CSV of order history. """
-    with open('test.csv', 'wb') as f:
+    with open('test.csv', 'w') as f:  # Use 'wb' for binary write mode
         writer = csv.writer(f)
         for t, stock, side, order, size in orders(market()):
             if t > MARKET_OPEN + SIM_LENGTH:
@@ -236,13 +236,17 @@ class App(object):
     """ The trading game server application. """
 
     def __init__(self):
-        self._book_1    = dict()
-        self._book_2    = dict()
-        self._data_1    = order_book(read_csv(), self._book_1, 'ABC')
-        self._data_2    = order_book(read_csv(), self._book_2, 'DEF')
+        self._book_1 = dict()
+        self._book_2 = dict()
+        self._data_1 = order_book(read_csv(), self._book_1, 'ABC')
+        self._data_2 = order_book(read_csv(), self._book_2, 'DEF')
         self._rt_start = datetime.now()
-        self._sim_start, _, _  = next(self._data_1)
-        self.read_10_first_lines()
+        try:
+            self._sim_start, _, _ = next(self._data_1)
+        except StopIteration:
+            self._sim_start = datetime.now()  # Handle the case when there's no data
+
+    # Rest of the App class remains the same...
 
     @property
     def _current_book_1(self):
@@ -261,11 +265,6 @@ class App(object):
                     yield t, bids, asks
             else:
                 yield t, bids, asks
-
-    def read_10_first_lines(self):
-            for _ in iter(range(10)):
-                next(self._data_1)
-                next(self._data_2)
 
     @route('/query')
     def handle_query(self, x):
